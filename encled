@@ -31,7 +31,7 @@ HELP = """
 """
 
 CLASS = '/sys/class/enclosure/'
-SLOT = 'Slot '  # with space
+SLOT = 'Slot'
 
 
 def enc_list():
@@ -50,7 +50,8 @@ def slot_list(enc):
     for elem in os.listdir(os.path.join(CLASS, enc)):
         slot = os.path.join(CLASS, enc, elem)
         if os.path.isdir(slot) and not os.path.islink(slot) and os.path.isfile(os.path.join(slot, 'type')):
-            slot_list.append(elem)
+            slot_num = elem.replace(SLOT, '').strip()
+            slot_list.append(int(slot_num))
         else:
             try:
                 slot_list.append(int(elem))  # naming type '001', only numbers pass
@@ -72,8 +73,10 @@ def find_name(enc, slot):
     if os.path.isfile(os.path.join(CLASS, enc, name, 'type')):
         return os.path.join(CLASS, enc, name)
     for z in range(0, 4):
-        if os.path.isfile(os.path.join(CLASS, enc, SLOT + name, 'type')):  # naming type 'Slot 01'
+        if os.path.isfile(os.path.join(CLASS, enc, SLOT + name, 'type')):  # naming type 'Slot01'
             return os.path.join(CLASS, enc, SLOT + name)
+        if os.path.isfile(os.path.join(CLASS, enc, SLOT + ' ' + name, 'type')):  # naming type 'Slot 01'
+            return os.path.join(CLASS, enc, SLOT + ' ' + name)
         if os.path.isfile(os.path.join(CLASS, enc, name, 'type')):  # naming type '001'
             return os.path.join(CLASS, enc, name)
         name = '0' + name  # try same name with more zeroes at front
